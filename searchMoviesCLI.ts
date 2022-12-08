@@ -8,16 +8,26 @@ import { Client } from "pg";
 const client = new Client({ database: 'omdb' });
 console.log("Welcome to search-movies-cli!")
 ;
-// https://stackoverflow.com/questions/61394928/get-user-input-through-node-js-console for input 
 async function connect(){
     await client.connect()
-    let searchTerm = question("What film do you want to search for?(or 'q' to quit)").toLowerCase()
-    const text = "select movie_id, movie_name, date, runtime, budget, revenue, vote_average, votes_count from casts_view where movie_name like $1";
-    const values = [`%${searchTerm}%`];
-    if (searchTerm!="q"){
+    // console.log("[1]Search [2]See your favourites [3]Quit")
+    // let option = question("Choose an action! [1,2,3]")
+    // if (option === '1'){
+        let searchTerm = question("Search term: ").toLowerCase()
+        const text = "select id, name, date, runtime, budget, revenue, vote_average, votes_count from movies where LOWER(name) like $1 order by date desc limit 10";
+        const values = [`%${searchTerm}%`];
         const res = await client.query(text, values);
-        console.table(res.rows)
-    }
+        console.table(res.rows) // how to have them as list, and say 0 cancel 
+    //     let favChoice = question("Choose a movie row number to favourite [1...8/0]: ")
+    //     // insert the movie id to the favourites table 
+    //     console.log("Saving favourite movie: ") //how to get the name of the film here 
+    // }
+    // if (option === '2'){
+    //     console.log("Here are your saved favourites!")
+    //     const res = await client.query("select ");// need query that joins favourites to casts_view
+    // }
+    // console.log("All done!")
     await client.end()
 }
+// }
 connect()
