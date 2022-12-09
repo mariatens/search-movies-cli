@@ -10,7 +10,6 @@ console.log("Welcome to search-movies-cli!")
 ;
 async function connect(){
     await client.connect()
-//TODO: create a loop so that it asks every time done 
     while(true){
     console.log("[1]Search [2]See your favourites [3]Quit")
     let option = question("Choose an action! [1,2,3]")
@@ -21,14 +20,26 @@ async function connect(){
         const res = await client.query(searchQuery, values);
         console.table(res.rows) 
         // TODO: have them as list, and say 0 cancel 
-        let favChoice = question("Choose a movie row number to favourite [1...8/0]: ")
-        let favChoiceNum: number  = parseInt(favChoice)
+        let i =0
+        for (let item of res.rows){
+             i += 1
+            console.log(`[${i}] ${item.name}`)
+        }
+        console.log("[0] Cancel")
+        let favChoice = question(`Choose a movie row number to favourite [1...${res.rows.length}/0]: `)
+        if (favChoice === '0'){
+            console.log("All done!")
+            await client.end()
+            break
+        }
+        else{
+        let favChoiceNum: number  = parseInt(favChoice)-1
         const favMovieId = res.rows[favChoiceNum].id
         const favAddQuery = "insert into favourites(movie_id) values ($1)"
         const movieId = [`${favMovieId}`]
         const result = await client.query(favAddQuery, movieId)
         console.log("Saving favourite movie: ", res.rows[0].name) 
-    }
+        }}
     if (option === '2'){
         console.log("Here are your saved favourites!")
         const res = await client.query("select movies.id, name, date, runtime, budget, revenue, vote_average, votes_count from movies join favourites on movies.id = favourites.movie_id");
